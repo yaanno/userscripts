@@ -49,9 +49,11 @@ for (i=0; i<knownCommentIdentifiers.length;i++){
 
 // TODO create a hide/show panel with options
 // hide 'em all
-for(i=0;i<commentBlocks.length;i++){
-  if(commentBlocks[i].childNodes.length>1){
-    commentBlocks[i].style.display = 'none';
+if(commentBlocks.length>0){
+  for(i=0;i<commentBlocks.length;i++){
+    if(commentBlocks[i].childNodes.length>1){
+      commentBlocks[i].style.display = 'none';
+    }
   }
 }
 
