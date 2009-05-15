@@ -36,11 +36,15 @@ window.pageLoaded = function(){
   // create control panel
   window.createPanel();
   
-  // setup default options for persistent storage
+  // setup default options for persistent storage:
+  // kk_blockCache stores the kk_knownBlocks
+  // TODO let the user extend the stored list
   if(!GM_getValue("kk_blockCache")){
     GM_setValue("kk_blockCache",kk_knownBlocks);
   }
   
+  // kk_hideCommentsDefault and kk_harvestCommentsDefault stores
+  // the default behavior options
   if(!GM_getValue("kk_hideCommentsDefault")){
     GM_setValue("kk_hideCommentsDefault",false);
   }
@@ -75,7 +79,7 @@ window.createPanel = function(){
   kk_content += '#kk_panel a:link, #kk_panel a:visited{color:#fff} #kk_panel a:hover{color:#ddd}';
   kk_content += '</style>';
   kk_content += '<p><input id="kk_harvest_option" type="checkbox"> <label for="kk_harvest_option">Harvest all comments by default</label></p>';
-  kk_content += '<p><input id="kk_hide_option" type="checkbox"> <label for="kk_harvest_option">Hide all comments by default</label></p>';
+  kk_content += '<p><input id="kk_hide_option" type="checkbox"> <label for="kk_hide_option">Hide all comments by default</label></p>';
   kk_content += '<p><input id="kk_hidecomments" type="button" value="Hide all"> or ';
   kk_content += '<input id="kk_showcomments" type="button" value="Show all"></p>';
   kk_content += '</div>';
@@ -138,13 +142,12 @@ window.updateOptions = function(target){
 
 };
 
-// Handles keyboard events watching the open/close key press (currently: ESC)
-// TODO change the keycode
+// Handles keyboard events watching the open/close key press (currently: ALT+CRTL+K)
 window.handleKey = function(e){
   
   var panel = kk_contentWrapper.firstChild;
   
-  if(e.keyCode == 27){
+  if(e.ctrlKey && e.altKey && e.keyCode == 75){
     panel.style.display == 'block' ? panel.style.display  = 'none' : panel.style.display  = 'block';
   }
 
@@ -170,7 +173,7 @@ window.harvestComments = function(){
   for (i=0; i<kk_knownBlocks.length;i++){
     var _tmpvar2 = document.getElementsByClassName(kk_knownBlocks[i]);
     if(_tmpvar2 && _tmpvar2.length>1){
-      for(j=0;j<_tmpvar2.length;j++){
+      for(j=0,_len=_tmpvar2.length;j<_len;j++){
         kk_currentBlocks.push(_tmpvar2[j]);
       }
     } 
@@ -185,7 +188,7 @@ window.harvestComments = function(){
 window.hideComments = function(){
 
   if(kk_currentBlocks.length>0){
-    for(i=0;i<kk_currentBlocks.length;i++){
+    for(i=0, _len=kk_currentBlocks.length; i<_len;i++){
       if(kk_currentBlocks[i].childNodes.length>1){
         window.hideElement(kk_currentBlocks[i]);
       }
@@ -198,7 +201,7 @@ window.hideComments = function(){
 window.showComments = function(){
 
   if(kk_currentBlocks.length>0){
-    for(i=0;i<kk_currentBlocks.length;i++){
+    for(i=0, _len=kk_currentBlocks.length;i<_len;i++){
       if(kk_currentBlocks[i].childNodes.length>1){
         window.showElement(kk_currentBlocks[i]);
       }
@@ -223,4 +226,4 @@ window.addEventListener('load', window.pageLoaded, true);
 // listens events delegated to control panel
 kk_contentWrapper.addEventListener('click', window.handleClick, true);
 // watches the open/close key press event
-window.addEventListener('keypress', window.handleKey, true);
+window.addEventListener('keydown', window.handleKey, true);
