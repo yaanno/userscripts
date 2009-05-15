@@ -25,10 +25,16 @@
 
 // TODO externalize the identitifers
 
-var kk_knownBlocks = "comment commentlist comments respond cnnComments comment_container hozzaszolas";
+var kk_knownBlocks = "comment commentlist comments respond cnnComments comment_container trackbacks";
 var kk_currentBlocks = [];
 var kk_contentWrapper = document.createElement("div");
-
+var kk_panelConfig = {
+  kk_internalBlockCache : [],
+  kk_harvest_option : false,
+  kk_hide_option : false,
+  kk_hide_input : null,
+  kk_harvest_input : null
+}
 
 // the init function
 window.pageLoaded = function(){
@@ -36,37 +42,34 @@ window.pageLoaded = function(){
   // create control panel
   window.createPanel();
   
-  // setup default options for persistent storage:
-  // kk_blockCache stores the kk_knownBlocks
-  // TODO let the user extend the stored list
+  // setup default options for persistent storage
   if(!GM_getValue("kk_blockCache")){
     GM_setValue("kk_blockCache",kk_knownBlocks);
   }
   
-  // kk_hideCommentsDefault and kk_harvestCommentsDefault stores
-  // the default behavior options
   if(!GM_getValue("kk_hideCommentsDefault")){
-    GM_setValue("kk_hideCommentsDefault",false);
+    GM_setValue("kk_hideCommentsDefault",kk_panelConfig.kk_hide_input);
   }
   
   if(!GM_getValue("kk_harvestCommentsDefault")){
-    GM_setValue("kk_harvestCommentsDefault",false);
+    GM_setValue("kk_harvestCommentsDefault",kk_panelConfig.kk_harvest_option);
   }
   
-  // TODO move these into functions, that updates the panel
-  // and start the processing
-  if(GM_getValue("kk_harvestCommentsDefault") == true){
-    var _kk_harvest_option =  document.getElementById("kk_harvest_option");
-    _kk_harvest_option.checked = true;
-    window.harvestComments();
-  }
+  // fill up the default current values
+  kk_panelConfig.kk_harvest_option = GM_getValue("kk_harvestCommentsDefault");
+  kk_panelConfig.kk_hide_option = GM_getValue("kk_hideCommentsDefault");
+  kk_panelConfig.kk_harvest_input = document.getElementById("kk_harvest_option");
+  kk_panelConfig.kk_hide_input = document.getElementById("kk_hide_option");
   
-  if(GM_getValue("kk_hideCommentsDefault") == true){
-    var _kk_hide_option =  document.getElementById("kk_hide_option");
-    _kk_hide_option.checked = true;
-    window.hideComments();
-  }
+  window.setPanelState();
   
+};
+
+window.getPanelState = function(){};
+
+window.setPanelState = function(){
+  kk_panelConfig.kk_hide_input.checked = kk_panelConfig.kk_hide_option;
+  kk_panelConfig.kk_harvest_input.checked = kk_panelConfig.kk_harvest_option;
 };
 
 // control panel creator function
@@ -75,7 +78,7 @@ window.createPanel = function(){
   var kk_content = '<div id="kk_panel">';
   kk_content += '<style>';
   kk_content += '#kk_panel {display:none;width:200px;padding:15px;background:#333;color:#fff; position:fixed;top:0;left:20px;z-index:1000;font-size:11px; font-family:Helvetica;border: 5px solid #666;border-top:none}';
-  kk_content += '#kk_panel *{margin:0;padding:0} #kk_panel p{padding: 5px; line-height: 16px}';
+  kk_content += '#kk_panel *{margin:0;padding:0;text-align:left} #kk_panel p{padding: 5px; line-height: 16px}';
   kk_content += '#kk_panel a:link, #kk_panel a:visited{color:#fff} #kk_panel a:hover{color:#ddd}';
   kk_content += '</style>';
   kk_content += '<p><input id="kk_harvest_option" type="checkbox"> <label for="kk_harvest_option">Harvest all comments by default</label></p>';
@@ -142,7 +145,7 @@ window.updateOptions = function(target){
 
 };
 
-// Handles keyboard events watching the open/close key press (currently: ALT+CRTL+K)
+// Handles keyboard events watching the open/close key press (currently: ESC)
 window.handleKey = function(e){
   
   var panel = kk_contentWrapper.firstChild;
@@ -179,7 +182,7 @@ window.harvestComments = function(){
     } 
   }
   
-  //console.log(kk_currentBlocks)
+  console.log(kk_currentBlocks)
   
   
 };
