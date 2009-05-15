@@ -29,7 +29,45 @@ var kk_knownBlocks = "comment commentlist comments respond cnnComments comment_c
 var kk_currentBlocks = [];
 var kk_contentWrapper = document.createElement("div");
 
+
+// the init function
 window.pageLoaded = function(){
+
+  // create control panel
+  window.createPanel();
+  
+  // setup default options for persistent storage
+  if(!GM_getValue("kk_blockCache")){
+    GM_setValue("kk_blockCache",kk_knownBlocks);
+  }
+  
+  if(!GM_getValue("kk_hideCommentsDefault")){
+    GM_setValue("kk_hideCommentsDefault",false);
+  }
+  
+  if(!GM_getValue("kk_harvestCommentsDefault")){
+    GM_setValue("kk_harvestCommentsDefault",false);
+  }
+  
+  // TODO move these into functions, that updates the panel
+  // and start the processing
+  if(GM_getValue("kk_harvestCommentsDefault") == true){
+    var _kk_harvest_option =  document.getElementById("kk_harvest_option");
+    _kk_harvest_option.checked = true;
+    window.harvestComments();
+  }
+  
+  if(GM_getValue("kk_hideCommentsDefault") == true){
+    var _kk_hide_option =  document.getElementById("kk_hide_option");
+    _kk_hide_option.checked = true;
+    window.hideComments();
+  }
+  
+};
+
+// control panel creator function
+window.createPanel = function(){
+
   var kk_content = '<div id="kk_panel">';
   kk_content += '<style>';
   kk_content += '#kk_panel {display:none;width:200px;padding:15px;background:#333;color:#fff; position:fixed;top:0;left:20px;z-index:1000;font-size:11px; font-family:Helvetica;border: 5px solid #666;border-top:none}';
@@ -44,33 +82,11 @@ window.pageLoaded = function(){
   
   kk_contentWrapper.innerHTML = kk_content;
   document.body.insertBefore(kk_contentWrapper, document.body.firstChild);
-  
-  if(!GM_getValue("kk_blockCache")){
-    GM_setValue("kk_blockCache",kk_knownBlocks);
-  }
-  
-  if(!GM_getValue("kk_harvestCommentsDefault")){
-    GM_setValue("kk_harvestCommentsDefault",false);
-  }
-  
-  if(GM_getValue("kk_harvestCommentsDefault") == true){
-    var _kk_harvest_option =  document.getElementById("kk_harvest_option");
-    _kk_harvest_option.checked = true;
-    window.harvestComments();
-  }
-  
-  if(!GM_getValue("kk_hideCommentsDefault")){
-    GM_setValue("kk_hideCommentsDefault",false);
-  }
-  
-  if(GM_getValue("kk_hideCommentsDefault") == true){
-    var _kk_hide_option =  document.getElementById("kk_hide_option");
-    _kk_hide_option.checked = true;
-    window.hideComments();
-  }
-  
+
 };
 
+// Handles control panel events
+// TODO make this event handler more general
 window.handleClick = function(e){
   var target = e ? e.target : this;
   console.log(target);
@@ -95,6 +111,8 @@ window.handleClick = function(e){
   
 };
 
+// Updates the persistent storage options
+// TODO clean up this function using encapsulation
 window.updateOptions = function(target){
   
   var _kk_harvest_option =  document.getElementById("kk_harvest_option");
@@ -120,6 +138,8 @@ window.updateOptions = function(target){
 
 };
 
+// Handles keyboard events watching the open/close key press (currently: ESC)
+// TODO change the keycode
 window.handleKey = function(e){
   
   var panel = kk_contentWrapper.firstChild;
@@ -130,11 +150,13 @@ window.handleKey = function(e){
 
 };
 
+// Collects all blocks that may contain comments using #id or .class names
+// defined in kk_knownBlocks
 window.harvestComments = function(){
   
   // unpack kk_knownBlocks
   kk_knownBlocks = GM_getValue("kk_blockCache").split(" ");
-  console.log(kk_knownBlocks)
+  //console.log(kk_knownBlocks)
   
   // check for ids
   for (i=0; i<kk_knownBlocks.length;i++){
@@ -154,11 +176,12 @@ window.harvestComments = function(){
     } 
   }
   
-  console.log(kk_currentBlocks)
+  //console.log(kk_currentBlocks)
   
   
 };
 
+// Hides all comment blocks
 window.hideComments = function(){
 
   if(kk_currentBlocks.length>0){
@@ -171,6 +194,7 @@ window.hideComments = function(){
 
 };
 
+// Shows all comments block (we made invisible)
 window.showComments = function(){
 
   if(kk_currentBlocks.length>0){
@@ -183,14 +207,20 @@ window.showComments = function(){
 
 };
 
+// Style function
 window.showElement = function(element){
   element.style.display = 'block';
 }
 
+// Style function
 window.hideElement = function(element){
   element.style.display = 'none';
 }
 
+// Event listeners:
+// watches the window to load
 window.addEventListener('load', window.pageLoaded, true);
+// listens events delegated to control panel
 kk_contentWrapper.addEventListener('click', window.handleClick, true);
+// watches the open/close key press event
 window.addEventListener('keypress', window.handleKey, true);
